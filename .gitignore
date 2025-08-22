@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# OS files
+.DS_Store
+*.log
+
+# Optional frontend build folders
+frontend/.next/
+frontend/build/
+frontend/dist/
+
+# Optional backend build folders
+backend/dist/
