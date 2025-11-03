@@ -98,7 +98,7 @@ const Navbar = () => {
       formData.append('image', file);
 
       // Make API call
-      const response = await axios.post(`${process.env.API_BASE_URL}/products/scan`, formData, {
+      const response = await axios.post(`http://localhost:3001/api/products/scan`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
