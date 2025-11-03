@@ -6,6 +6,8 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const routes = require('./routes/routes');
+const paymentRoutes = require("./routes/paymentRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const notificationController = require('./controllers/notificationController');
 
 const app = express();
@@ -18,6 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api', routes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Error Handler
 app.use((err, req, res, next) => {

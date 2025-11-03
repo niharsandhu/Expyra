@@ -13,6 +13,7 @@ const Navbar = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -26,11 +27,13 @@ const Navbar = () => {
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem('user');
       const token = localStorage.getItem('token');
-      
+      const paymentStatus = localStorage.getItem('payment');
+
       if (userData && token) {
         try {
           const parsedUser = JSON.parse(userData);
           setUser(parsedUser);
+           if (paymentStatus === 'done') setIsPremium(true);
         } catch (error) {
           console.error('Error parsing user data:', error);
           localStorage.removeItem('user');
@@ -94,7 +97,7 @@ const Navbar = () => {
       formData.append('image', file);
 
       // Make API call
-      const response = await axios.post('http://localhost:3000/api/products/scan', formData, {
+      const response = await axios.post(`${process.env.API_BASE_URL}/products/scan`, formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -215,14 +218,38 @@ Expiry: ${new Date(response.data.userProduct.expiryDate).toLocaleDateString()}`)
           {/* Actions (notifications, add button, user, mobile menu) */}
           <div className="flex items-center space-x-3">
             
-            {/* Notifications Button */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-400/10 rounded-lg blur-lg opacity-50 group-hover:opacity-100 transition-all duration-500"></div>
-              <button className="relative p-2 bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-xl rounded-lg border border-white/10 hover:border-blue-400/30 transition-all duration-300 group-hover:scale-105">
-                <Bell className="w-4 h-4 text-white" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              </button>
-            </div>
+          
+       {/* Premium Button */}
+{user && (
+  <div className="relative group">
+    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-yellow-400/10 rounded-lg blur-lg opacity-50 group-hover:opacity-100 transition-all duration-500"></div>
+    <button
+      onClick={() => {
+        if (isPremium) return;
+        window.location.href = "/premium"; // or trigger handlePayment() directly
+      }}
+      className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 group-hover:scale-105 shadow-xl border ${
+        isPremium
+          ? "bg-gradient-to-r from-yellow-500 to-yellow-400 text-black border-yellow-400"
+          : "bg-gradient-to-r from-blue-500/20 via-blue-400/10 to-blue-600/20 text-white border border-white/10 hover:border-blue-400/40 hover:shadow-blue-500/20"
+      }`}
+    >
+      {isPremium ? (
+        <div className="flex items-center space-x-2">
+          <ShieldCheck className="w-4 h-4 text-yellow-300" />
+          <span>Premium</span>
+        </div>
+      ) : (
+        <div className="flex items-center space-x-2">
+          <Crown className="w-4 h-4 text-yellow-300" />
+          <span>Go Premium</span>
+        </div>
+      )}
+    </button>
+  </div>
+)}
+
+
 
             {user ? (
               <>

@@ -35,7 +35,7 @@ const AuthPages = () => {
     setSuccess('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/users/login`, {
+      const response = await axios.post(`http://localhost:3001/api/users/login`, {
         phone: loginData.phone || undefined,
         email: loginData.email || undefined
       });

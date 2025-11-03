@@ -72,6 +72,74 @@ const HomePage = () => {
       image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop&crop=center'
     }
   ];
+const handlePayment = async () => {
+  try {
+    // 🧠 Step 0: Get user from localStorage
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) {
+      alert("User not found, please log in again.");
+      return;
+    }
+
+    // 🧾 Step 1: Create an order on your backend
+    const res = await fetch("http://localhost:3001/api/payment/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: user.id, // ✅ using your stored ID
+        amount: 99, // ₹99 example
+      }),
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error("Order creation failed");
+
+    // 💳 Step 2: Configure Razorpay checkout options
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: data.order.amount,
+      currency: data.order.currency,
+      name: "Expyra",
+      description: "Free Trial Plan",
+      order_id: data.order.id,
+      handler: async function (response) {
+        // ✅ Step 3: Verify payment on backend
+        const verifyRes = await fetch("http://localhost:3001/api/payment/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(response),
+        });
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.success) {
+          alert("✅ Payment verified successfully!");
+
+          // 💾 Save payment status in localStorage
+          localStorage.setItem("payment", "done"); // or "isPremium", true
+          localStorage.setItem("isPremium", "true");
+
+          // 🔄 (Optional) reload navbar or redirect to refresh UI
+          window.location.reload();
+        } else {
+          alert("❌ Payment verification failed.");
+        }
+      },
+      prefill: {
+        name: user.name || "User",
+        email: user.email || "",
+        contact: user.phone || "",
+      },
+      theme: { color: "#2563eb" },
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  } catch (error) {
+    console.error("Payment error:", error);
+    alert("Payment failed, please try again.");
+  }
+};
+
 
 
   return (
@@ -450,55 +518,60 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+{/* Call to Action Section */}
+<section className="py-20 px-6 lg:px-8">
+  <div className="max-w-4xl mx-auto text-center">
+    <div className="backdrop-blur-2xl bg-gradient-to-br from-white/10 via-white/5 to-blue-500/10 border border-white/20 rounded-3xl p-12 shadow-2xl">
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent rounded-3xl"></div>
+        <div className="relative">
+          <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent tracking-tight">
+            Ready to Transform Your Inventory?
+          </h2>
+          <p className="text-xl text-gray-300 mb-8 font-light leading-relaxed">
+            Join thousands of professionals who trust Expyra to protect their valuable assets
+          </p>
 
-        {/* Call to Action Section */}
-        <section className="py-20 px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="backdrop-blur-2xl bg-gradient-to-br from-white/10 via-white/5 to-blue-500/10 border border-white/20 rounded-3xl p-12 shadow-2xl">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent rounded-3xl"></div>
-                <div className="relative">
-                  <h2 className="text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent tracking-tight">
-                    Ready to Transform Your Inventory?
-                  </h2>
-                  <p className="text-xl text-gray-300 mb-8 font-light leading-relaxed">
-                    Join thousands of professionals who trust Expyra to protect their valuable assets
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 rounded-xl blur-xl opacity-50 group-hover:opacity-80 transition-all duration-500"></div>
-                      <button className="relative bg-gradient-to-r from-white to-gray-100 text-black px-10 py-4 rounded-xl font-semibold transition-all duration-300 group-hover:scale-105 shadow-xl flex items-center space-x-3 border border-white/20">
-                        <span>Start Free Trial</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-                      </button>
-                    </div>
-                    
-                    <button className="backdrop-blur-xl bg-white/5 border border-white/20 text-white px-10 py-4 rounded-xl hover:bg-white/10 hover:border-white/30 transition-all duration-300 font-medium flex items-center space-x-3 hover:scale-105">
-                      <span>Schedule Demo</span>
-                      <Calendar className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center justify-center space-x-8 mt-8 pt-8 border-t border-white/10">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-blue-400" />
-                      <span className="text-sm text-gray-300">No credit card required</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-blue-400" />
-                      <span className="text-sm text-gray-300">14-day free trial</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-blue-400" />
-                      <span className="text-sm text-gray-300">Cancel anytime</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 rounded-xl blur-xl opacity-50 group-hover:opacity-80 transition-all duration-500"></div>
+
+              {/* 🧠 Razorpay Trigger Button */}
+              <button
+                onClick={handlePayment}
+                className="relative bg-gradient-to-r from-white to-gray-100 text-black px-10 py-4 rounded-xl font-semibold transition-all duration-300 group-hover:scale-105 shadow-xl flex items-center space-x-3 border border-white/20"
+              >
+                <span>Start Free Trial</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+              </button>
+            </div>
+
+            <button className="backdrop-blur-xl bg-white/5 border border-white/20 text-white px-10 py-4 rounded-xl hover:bg-white/10 hover:border-white/30 transition-all duration-300 font-medium flex items-center space-x-3 hover:scale-105">
+              <span>Schedule Demo</span>
+              <Calendar className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center space-x-8 mt-8 pt-8 border-t border-white/10">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+              <span className="text-sm text-gray-300">No credit card required</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+              <span className="text-sm text-gray-300">14-day free trial</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-blue-400" />
+              <span className="text-sm text-gray-300">Cancel anytime</span>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
         {/* Footer */}
         <footer className="py-16 px-6 lg:px-8 border-t border-white/10">
