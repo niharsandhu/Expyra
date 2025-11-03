@@ -291,10 +291,10 @@ const AuthPages = () => {
                   </div>
 
                   <div className="text-center">
-                    <span className="text-gray-400">Don't have an account? </span>
+                  <p className="text-gray-400">Don&apos;t have an account?</p>
                     <button 
                       type="button"
-                      onClick={() => {
+                      onClick={() => { 
                         setCurrentPage('signup');
                         setError('');
                         setSuccess('');

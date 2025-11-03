@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Crown } from "lucide-react";
 import { usePathname } from 'next/navigation';
 import { ShieldCheck, Bell, Plus, Menu, X, Brain, Home, Package, TrendingUp, Shield, LogIn, UserPlus, User, LogOut, Upload, Camera } from 'lucide-react';
 import axios from 'axios';
